@@ -1,10 +1,19 @@
-import { ACCESS_TOKEN } from '../constants';
+import { ACCESS_TOKEN_KEY } from '../constants';
 
 const responseInterceptors = [
     {
         name: 'formatResponse',
         success(response) {
-            return response.data;
+            if (response.status === 200) {
+                return response.data;
+            }
+            return Promise.reject(response);
+        },
+        fail(err) {
+            return Promise.reject({
+                code: err.response.data.error_code,
+                message: err.response.data.error,
+            });
         }
     }
 ];
@@ -13,7 +22,7 @@ const requestInterceptors = [
     {
         name: 'addHttpRequestHeader',
         success(config) {
-            config.headers['Authorization'] = `OAuth2 ${ ACCESS_TOKEN }`;
+            config.headers['Authorization'] = `OAuth2 ${localStorage.getItem(ACCESS_TOKEN_KEY)}`;
             return config;
         },
         fail(err) {
